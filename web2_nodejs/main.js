@@ -2,77 +2,60 @@ var http = require("http");
 var fs = require("fs");
 var url = require("url"); //url module 사용
 
+//HTML Template 함수
+function templateHTML(title, list, body){
+  return `
+  <!doctype html>
+    <html>
+    <head>
+      <title>WEB1 - ${title}</title>
+      <meta charset="utf-8">
+    </head>
+    <body>
+      <h1><a href="/">WEB</a></h1>
+        ${list}
+        ${body}
+    </body>
+    </html>
+  `;
+}
+
+//HTML의 <ul> 출력 목록 구현하는 함수
+function templateList(filelist){
+  var list = '<ul>';
+  var i = 0;
+  while(i<filelist.length){
+    list+=`<li><a href="/?id=${filelist[i]}">${filelist[i]}</a></li>`;
+    i+=1;
+  }
+    list = list + '</ul>';
+    return list;
+}
+
 var app = http.createServer(function (request, response) {
   var _url = request.url;
   var queryData = url.parse(_url, true).query;
   var pathname = url.parse(_url, true).pathname;
- 
-
   //console.log(url.parse(_url, true)); //url의 내용을 저장해놓은 객체
-
   if(pathname === '/'){
+    //queryData.id가 undefined라면, 그냥 localhost:3000일 경우
     if(queryData.id===undefined){
-      fs.readdir('./data', function(err, filelist){
+      fs.readdir('./data', function(err, filelist){ //./data 디렉토리의 파일을 읽어오기 -> 글 목록 출력을 위해 필요함
         var title = 'Welcome';
         var description = 'Hello, Node js';
-
-        var list = '<ul>';
-        var i = 0;
-        while(i<filelist.length){
-          list+=`<li><a href="/?id=${filelist[i]}">${filelist[i]}</a></li>`;
-          i+=1;
-        }
-        list = list + '</ul>';
-
-        var template = `
-        <!doctype html>
-          <html>
-          <head>
-            <title>WEB1 - ${title}</title>
-            <meta charset="utf-8">
-          </head>
-          <body>
-            <h1><a href="/">WEB</a></h1>
-              ${list}
-            <h2>${title}</h2>
-            <p>
-              ${description}
-            </p>
-          </body>
-          </html>
-        `;
+        var list = templateList(filelist);
+        var template = templateHTML(title, list, `<h2>${title}</h2>${description}`);
+    
         response.writeHead(200);  //파일 성공적으로 저장
         response.end(template); //queryData.id를 화면에 출력시킴
       });
-    }else{
+    }else{  //queryData.id가 있을 경우
       fs.readdir('./data', function(err, filelist){
-        var list = '<ul>';
-        var i = 0;
-        while(i<filelist.length){
-          list+=`<li><a href="/?id=${filelist[i]}">${filelist[i]}</a></li>`;
-          i+=1;
-        }
-        list = list + '</ul>';
-
-        fs.readFile(`data/${queryData.id}`, 'utf8', function(err, description){
+        //./data에 있는 파일 중 queryData.id와 같은 파일명을 찾아 description에 저장
+        fs.readFile(`data/${queryData.id}`, 'utf8', function(err, description){ 
           var title = queryData.id;
-          var template = `
-          <!doctype html>
-            <html>
-            <head>
-              <title>WEB1 - ${title}</title>
-              <meta charset="utf-8">
-            </head>
-            <body>
-              <h1><a href="/">WEB</a></h1>
-              ${list}
-              <h2>${title}</h2>
-              <p>
-                ${description}
-              </p>
-            </body>
-            </html>
-          `;
+          var list = templateList(filelist);
+          var template = templateHTML(title, list, `<h2>${title}</h2>${description}`);
           response.writeHead(200);  //파일 성공적으로 저장
           response.end(template); //queryData.id를 화면에 출력시킴
         });
