@@ -1,0 +1,9 @@
+<!-- action속성이 가리키는 곳에 querystring형식으로 보냄 -->
+<!-- 데이터를 수정/삭제/생성했다면 반드시 method는 post로 해주어야한다 -->
+<form action="http://localhost:3000/process_create" method="post">
+    <p><input type="text" name="title"></p>
+    <p><textarea name="description"></textarea></p>
+    <p>
+        <input type="submit">
+    </p>
+</form>
