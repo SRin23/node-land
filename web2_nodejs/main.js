@@ -1,6 +1,7 @@
 var http = require("http");
 var fs = require("fs");
 var url = require("url"); //url module 사용
+var qs = require('querystring');
 
 //HTML Template 함수
 function templateHTML(title, list, body){
@@ -68,7 +69,7 @@ var app = http.createServer(function (request, response) {
         var title = 'WEB - create';
         var list = templateList(filelist);
         var template = templateHTML(title, list, `
-        <form action="http://localhost:3000/process_create" method="post">
+        <form action="http://localhost:3000/create_process" method="post">
           <p><input type="text" name="title" placeholder="title"></p>
           <p><textarea name="description" placeholder="descriptioin"></textarea></p>
           <p>
@@ -81,6 +82,18 @@ var app = http.createServer(function (request, response) {
         response.end(template); //queryData.id를 화면에 출력시킴
       });
     }
+  }else if(pathname==='/create_process'){
+    var body = '';
+    request.on('data', function(data){
+      body += data;
+    });
+    request.on('end', function(){
+      var post = qs.parse(body);
+      var title = post.title;
+      var description = post.description;
+    })
+    response.writeHead(200);  //파일 성공적으로 저장
+    response.end("SUCCESS"); //queryData.id를 화면에 출력시킴
   }else{
     response.writeHead(404);  //파일을 찾을 수 없음
     response.end('Not Found');
