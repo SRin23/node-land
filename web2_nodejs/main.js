@@ -14,6 +14,7 @@ function templateHTML(title, list, body){
     <body>
       <h1><a href="/">WEB</a></h1>
         ${list}
+        <a href="/create">create</a>
         ${body}
     </body>
     </html>
@@ -59,6 +60,25 @@ var app = http.createServer(function (request, response) {
           response.writeHead(200);  //파일 성공적으로 저장
           response.end(template); //queryData.id를 화면에 출력시킴
         });
+      });
+    }
+  }else if(pathname==="/create"){
+    if(queryData.id===undefined){
+      fs.readdir('./data', function(err, filelist){ //./data 디렉토리의 파일을 읽어오기 -> 글 목록 출력을 위해 필요함
+        var title = 'WEB - create';
+        var list = templateList(filelist);
+        var template = templateHTML(title, list, `
+        <form action="http://localhost:3000/process_create" method="post">
+          <p><input type="text" name="title" placeholder="title"></p>
+          <p><textarea name="description" placeholder="descriptioin"></textarea></p>
+          <p>
+            <input type="submit">
+          </p>
+        </form>
+        `);
+    
+        response.writeHead(200);  //파일 성공적으로 저장
+        response.end(template); //queryData.id를 화면에 출력시킴
       });
     }
   }else{
