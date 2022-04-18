@@ -71,7 +71,7 @@ var app = http.createServer(function (request, response) {
         var template = templateHTML(title, list, `
         <form action="http://localhost:3000/create_process" method="post">
           <p><input type="text" name="title" placeholder="title"></p>
-          <p><textarea name="description" placeholder="descriptioin"></textarea></p>
+          <p><textarea name="description" placeholder="description"></textarea></p>
           <p>
             <input type="submit">
           </p>
@@ -91,9 +91,12 @@ var app = http.createServer(function (request, response) {
       var post = qs.parse(body);
       var title = post.title;
       var description = post.description;
+
+      fs.writeFile(`data/${title}`, description, 'utf8', function(err){
+        response.writeHead(302, {Location:`/?id=${title}`});  //작성한 title을 querystring으로 가진 페이지로 이동 
+        response.end(); 
+      })
     })
-    response.writeHead(200);  //파일 성공적으로 저장
-    response.end("SUCCESS"); //queryData.id를 화면에 출력시킴
   }else{
     response.writeHead(404);  //파일을 찾을 수 없음
     response.end('Not Found');
