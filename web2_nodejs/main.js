@@ -61,7 +61,14 @@ var app = http.createServer(function (request, response) {
           var list = templateList(filelist);
           var template = templateHTML(title, list, 
             `<h2>${title}</h2>${description}`, 
-            `<a href="/create">create</a> <a href="/update?id=${title}">update</a>`
+            `
+            <a href="/create">create</a> 
+            <a href="/update?id=${title}">update</a> 
+            <form action="delete_process" method="post">
+              <input type="hidden" name = "id" value="${title}"/>
+              <input type="submit" value="delete">
+            </form>
+            `
           );
           response.writeHead(200);  //파일 성공적으로 저장
           response.end(template); //queryData.id를 화면에 출력시킴
