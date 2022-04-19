@@ -74,7 +74,7 @@ var app = http.createServer(function (request, response) {
         var title = 'WEB - create';
         var list = templateList(filelist);
         var template = templateHTML(title, list, `
-        <form action="http://localhost:3000/create_process" method="post">
+        <form action="/create_process" method="post">
           <p><input type="text" name="title" placeholder="title"></p>
           <p><textarea name="description" placeholder="description"></textarea></p>
           <p>
@@ -102,6 +102,29 @@ var app = http.createServer(function (request, response) {
         response.end(); 
       })
     })
+  }else if(pathname === '/update'){
+    fs.readdir('./data', function(err, filelist){
+      //./data에 있는 파일 중 queryData.id와 같은 파일명을 찾아 description에 저장
+      fs.readFile(`data/${queryData.id}`, 'utf8', function(err, description){ 
+        var title = queryData.id;
+        var list = templateList(filelist);
+        var template = templateHTML(title, list, 
+          `
+          <form action="/update_process" method="post">
+          <input type="hidden" name = "id" value="${title}">
+           <p><input type="text" name="title" placeholder="title" value="${title}"></p>
+          <p><textarea name="description" placeholder="description">${description}</textarea></p>
+          <p>
+            <input type="submit">
+          </p>
+          </form>
+        `, 
+          `<a href="/create">create</a> <a href="/update?id=${title}">update</a>`
+        );
+        response.writeHead(200);  //파일 성공적으로 저장
+        response.end(template); //queryData.id를 화면에 출력시킴
+      });
+    }); 
   }else{
     response.writeHead(404);  //파일을 찾을 수 없음
     response.end('Not Found');
