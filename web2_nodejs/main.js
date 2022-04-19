@@ -111,20 +111,38 @@ var app = http.createServer(function (request, response) {
         var template = templateHTML(title, list, 
           `
           <form action="/update_process" method="post">
-          <input type="hidden" name = "id" value="${title}">
-           <p><input type="text" name="title" placeholder="title" value="${title}"></p>
-          <p><textarea name="description" placeholder="description">${description}</textarea></p>
-          <p>
-            <input type="submit">
-          </p>
+            <input type="hidden" name = "id" value="${title}">
+            <p><input type="text" name="title" placeholder="title" value="${title}"></p>
+            <p><textarea name="description" placeholder="description">${description}</textarea></p>
+            <p>
+              <input type="submit">
+            </p>
           </form>
         `, 
           `<a href="/create">create</a> <a href="/update?id=${title}">update</a>`
         );
         response.writeHead(200);  //파일 성공적으로 저장
         response.end(template); //queryData.id를 화면에 출력시킴
-      });
+      }); 
     }); 
+  }else if(pathname==="/update_process"){
+    var body = '';
+    request.on('data', function(data){
+      body += data;
+    });
+    request.on('end', function(){
+      var post = qs.parse(body);
+      var title = post.title;
+      var description = post.description;
+      var id = post.id;
+      //console.log(id);
+      fs.rename(`data/${id}`, `data/${title}`, function(err){
+        fs.writeFile(`data/${title}`, description, 'utf8', function(err){
+          response.writeHead(302, {Location:`/?id=${title}`});  //작성한 title을 querystring으로 가진 페이지로 이동 
+          response.end(); 
+        })
+      })
+    })
   }else{
     response.writeHead(404);  //파일을 찾을 수 없음
     response.end('Not Found');
