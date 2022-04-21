@@ -3,36 +3,38 @@ var fs = require("fs");
 var url = require("url"); //url module 사용
 var qs = require('querystring');
 
-//HTML Template 함수
-function templateHTML(title, list, body, control){
-  return `
-  <!doctype html>
-    <html>
-    <head>
-      <title>WEB1 - ${title}</title>
-      <meta charset="utf-8">
-    </head>
-    <body>
-      <h1><a href="/">WEB</a></h1>
-        ${list}
-        ${control}
-        ${body}
-    </body>
-    </html>
-  `;
+
+//refactoring
+var template = {
+  html: function(title, list, body, control){
+    return `
+    <!doctype html>
+      <html>
+      <head>
+        <title>WEB1 - ${title}</title>
+        <meta charset="utf-8">
+      </head>
+      <body>
+        <h1><a href="/">WEB</a></h1>
+          ${list}
+          ${control}
+          ${body}
+      </body>
+      </html>
+    `;
+  },
+  list : function(filelist){
+    var list = '<ul>';
+    var i = 0;
+    while(i<filelist.length){
+      list+=`<li><a href="/?id=${filelist[i]}">${filelist[i]}</a></li>`;
+      i+=1;
+    }
+      list = list + '</ul>';
+      return list;
+  }
 }
 
-//HTML의 <ul> 출력 목록 구현하는 함수
-function templateList(filelist){
-  var list = '<ul>';
-  var i = 0;
-  while(i<filelist.length){
-    list+=`<li><a href="/?id=${filelist[i]}">${filelist[i]}</a></li>`;
-    i+=1;
-  }
-    list = list + '</ul>';
-    return list;
-}
 
 var app = http.createServer(function (request, response) {
   var _url = request.url;
@@ -45,6 +47,7 @@ var app = http.createServer(function (request, response) {
       fs.readdir('./data', function(err, filelist){ //./data 디렉토리의 파일을 읽어오기 -> 글 목록 출력을 위해 필요함
         var title = 'Welcome';
         var description = 'Hello, Node js';
+        /*
         var list = templateList(filelist);
         var template = templateHTML(title, list, 
           `<h2>${title}</h2>${description}`, 
@@ -52,14 +55,23 @@ var app = http.createServer(function (request, response) {
         );
         response.writeHead(200);  //파일 성공적으로 저장
         response.end(template); //queryData.id를 화면에 출력시킴
+        */
+       
+        var list = template.list(filelist);
+        var html = template.html(title, list, 
+          `<h2>${title}</h2>${description}`, 
+          `<a href="/create">create</a>`
+        );
+        response.writeHead(200);  //파일 성공적으로 저장
+        response.end(html); //queryData.id를 화면에 출력시킴
       });
     }else{  //queryData.id가 있을 경우
       fs.readdir('./data', function(err, filelist){
         //./data에 있는 파일 중 queryData.id와 같은 파일명을 찾아 description에 저장
         fs.readFile(`data/${queryData.id}`, 'utf8', function(err, description){ 
           var title = queryData.id;
-          var list = templateList(filelist);
-          var template = templateHTML(title, list, 
+          var list = template.list(filelist);
+          var html = template.html(title, list, 
             `<h2>${title}</h2>${description}`, 
             `
             <a href="/create">create</a> 
@@ -71,7 +83,7 @@ var app = http.createServer(function (request, response) {
             `
           );
           response.writeHead(200);  //파일 성공적으로 저장
-          response.end(template); //queryData.id를 화면에 출력시킴
+          response.end(html); //queryData.id를 화면에 출력시킴
         });
       });
     }
@@ -79,8 +91,8 @@ var app = http.createServer(function (request, response) {
     if(queryData.id===undefined){
       fs.readdir('./data', function(err, filelist){ //./data 디렉토리의 파일을 읽어오기 -> 글 목록 출력을 위해 필요함
         var title = 'WEB - create';
-        var list = templateList(filelist);
-        var template = templateHTML(title, list, `
+        var list = template.list(filelist);
+        var html = template.html(title, list, `
         <form action="/create_process" method="post">
           <p><input type="text" name="title" placeholder="title"></p>
           <p><textarea name="description" placeholder="description"></textarea></p>
@@ -91,7 +103,7 @@ var app = http.createServer(function (request, response) {
         `, ' ');
     
         response.writeHead(200);  //파일 성공적으로 저장
-        response.end(template); //queryData.id를 화면에 출력시킴
+        response.end(html); //queryData.id를 화면에 출력시킴
       });
     }
   }else if(pathname==='/create_process'){
@@ -114,8 +126,8 @@ var app = http.createServer(function (request, response) {
       //./data에 있는 파일 중 queryData.id와 같은 파일명을 찾아 description에 저장
       fs.readFile(`data/${queryData.id}`, 'utf8', function(err, description){ 
         var title = queryData.id;
-        var list = templateList(filelist);
-        var template = templateHTML(title, list, 
+        var list = template.list(filelist);
+        var html = template.html(title, list, 
           `
           <form action="/update_process" method="post">
             <input type="hidden" name = "id" value="${title}">
@@ -129,7 +141,7 @@ var app = http.createServer(function (request, response) {
           `<a href="/create">create</a> <a href="/update?id=${title}">update</a>`
         );
         response.writeHead(200);  //파일 성공적으로 저장
-        response.end(template); //queryData.id를 화면에 출력시킴
+        response.end(html); //queryData.id를 화면에 출력시킴
       }); 
     }); 
   }else if(pathname==="/update_process"){
