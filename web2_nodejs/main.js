@@ -3,7 +3,7 @@ var fs = require("fs");
 var url = require("url"); //url module 사용
 var qs = require('querystring');
 var template = require('./lib/template.js');
-console.log(template);
+var path = require('path');
 
 var app = http.createServer(function (request, response) {
   var _url = request.url;
@@ -26,8 +26,9 @@ var app = http.createServer(function (request, response) {
       });
     }else{  //queryData.id가 있을 경우
       fs.readdir('./data', function(err, filelist){
+        var filteredPath = path.parse(queryData.id).base;
         //./data에 있는 파일 중 queryData.id와 같은 파일명을 찾아 description에 저장
-        fs.readFile(`data/${queryData.id}`, 'utf8', function(err, description){ 
+        fs.readFile(`data/${filteredPath}`, 'utf8', function(err, description){ 
           var title = queryData.id;
           var list = template.list(filelist);
           var html = template.html(title, list, 
@@ -82,8 +83,9 @@ var app = http.createServer(function (request, response) {
     })
   }else if(pathname === '/update'){
     fs.readdir('./data', function(err, filelist){
+      var filteredPath = path.parse(queryData.id).base;
       //./data에 있는 파일 중 queryData.id와 같은 파일명을 찾아 description에 저장
-      fs.readFile(`data/${queryData.id}`, 'utf8', function(err, description){ 
+      fs.readFile(`data/${filteredPath}`, 'utf8', function(err, description){ 
         var title = queryData.id;
         var list = template.list(filelist);
         var html = template.html(title, list, 
@@ -129,7 +131,8 @@ var app = http.createServer(function (request, response) {
     request.on('end', function(){
       var post = qs.parse(body);
       var id = post.id;
-      fs.unlink(`data/${id}`, function(err){
+      var filteredPath = path.parse(queData.id).base;
+      fs.unlink(`data/${filteredPath}`, function(err){
         response.writeHead(302, {Location:'/'});
         response.end();
       })
