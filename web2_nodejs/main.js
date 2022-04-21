@@ -2,39 +2,8 @@ var http = require("http");
 var fs = require("fs");
 var url = require("url"); //url module 사용
 var qs = require('querystring');
-
-
-//refactoring
-var template = {
-  html: function(title, list, body, control){
-    return `
-    <!doctype html>
-      <html>
-      <head>
-        <title>WEB1 - ${title}</title>
-        <meta charset="utf-8">
-      </head>
-      <body>
-        <h1><a href="/">WEB</a></h1>
-          ${list}
-          ${control}
-          ${body}
-      </body>
-      </html>
-    `;
-  },
-  list : function(filelist){
-    var list = '<ul>';
-    var i = 0;
-    while(i<filelist.length){
-      list+=`<li><a href="/?id=${filelist[i]}">${filelist[i]}</a></li>`;
-      i+=1;
-    }
-      list = list + '</ul>';
-      return list;
-  }
-}
-
+var template = require('./lib/template.js');
+console.log(template);
 
 var app = http.createServer(function (request, response) {
   var _url = request.url;
@@ -47,16 +16,6 @@ var app = http.createServer(function (request, response) {
       fs.readdir('./data', function(err, filelist){ //./data 디렉토리의 파일을 읽어오기 -> 글 목록 출력을 위해 필요함
         var title = 'Welcome';
         var description = 'Hello, Node js';
-        /*
-        var list = templateList(filelist);
-        var template = templateHTML(title, list, 
-          `<h2>${title}</h2>${description}`, 
-          `<a href="/create">create</a>`
-        );
-        response.writeHead(200);  //파일 성공적으로 저장
-        response.end(template); //queryData.id를 화면에 출력시킴
-        */
-       
         var list = template.list(filelist);
         var html = template.html(title, list, 
           `<h2>${title}</h2>${description}`, 
