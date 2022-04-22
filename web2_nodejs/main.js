@@ -4,6 +4,7 @@ var url = require("url"); //url module 사용
 var qs = require('querystring');
 var template = require('./lib/template.js');
 var path = require('path');
+var sanitizeHtml = require('sanitize-html');  //script 태그의 내용을 모두 삭제시킴(예민한 태그는 삭제)
 
 var app = http.createServer(function (request, response) {
   var _url = request.url;
@@ -30,14 +31,19 @@ var app = http.createServer(function (request, response) {
         //./data에 있는 파일 중 queryData.id와 같은 파일명을 찾아 description에 저장
         fs.readFile(`data/${filteredPath}`, 'utf8', function(err, description){ 
           var title = queryData.id;
+          var sanitizedTitle = sanitizeHtml(title);
+          var sanitizedDescription = sanitizeHtml(description, {
+            allowedTags : ['h1']
+          });
+          
           var list = template.list(filelist);
-          var html = template.html(title, list, 
-            `<h2>${title}</h2>${description}`, 
+          var html = template.html(sanitizedTitle, list, 
+            `<h2>${sanitizedTitle}</h2>${sanitizedDescription}`, 
             `
             <a href="/create">create</a> 
-            <a href="/update?id=${title}">update</a> 
+            <a href="/update?id=${sanitizedTitle}">update</a> 
             <form action="delete_process" method="post">
-              <input type="hidden" name = "id" value="${title}"/>
+              <input type="hidden" name = "id" value="${sanitizedTitle}"/>
               <input type="submit" value="delete">
             </form>
             `
@@ -131,7 +137,7 @@ var app = http.createServer(function (request, response) {
     request.on('end', function(){
       var post = qs.parse(body);
       var id = post.id;
-      var filteredPath = path.parse(queData.id).base;
+      var filteredPath = path.parse(id).base;
       fs.unlink(`data/${filteredPath}`, function(err){
         response.writeHead(302, {Location:'/'});
         response.end();
